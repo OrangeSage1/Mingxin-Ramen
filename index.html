@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mingxin Ramen — Jenni Order Calculator</title>
+<style>
+  :root{
+    --ink:#2b1b1b; --muted:#785f58; --paper:#fff8e9; --card:#fffdf7;
+    --red:#d74735; --red-dark:#a92c24; --gold:#f2b544; --green:#47785b;
+    --line:#ecd8bd; --shadow:0 12px 28px rgba(70,32,20,.12);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; color:var(--ink); font-family:ui-rounded,"Trebuchet MS",system-ui,sans-serif;
+    background:
+      radial-gradient(circle at 8% 12%, rgba(242,181,68,.18) 0 3px, transparent 4px),
+      radial-gradient(circle at 90% 22%, rgba(215,71,53,.12) 0 4px, transparent 5px),
+      linear-gradient(135deg,#fff4df,#fbe4d2 55%,#fff7e9);
+    background-size:42px 42px,54px 54px,auto; min-height:100vh;
+  }
+  .topbar{background:var(--red-dark); color:#fff7e8; border-bottom:5px solid var(--gold)}
+  .topinner{max-width:1180px;margin:auto;padding:15px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .brand{display:flex;align-items:center;gap:13px}
+  .logo{width:55px;height:55px;border-radius:50%;display:grid;place-items:center;background:#fff0cf;color:var(--red-dark);font-size:29px;border:3px solid var(--gold);box-shadow:inset 0 0 0 3px #fff8e9}
+  h1,h2,h3,p{margin-top:0}
+  h1{font-size:clamp(1.35rem,3vw,2rem);margin:0;letter-spacing:.02em}
+  .subtitle{font-size:.9rem;opacity:.9;margin-top:4px}
+  .currency-pill{border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);padding:9px 13px;border-radius:999px;font-weight:800;white-space:nowrap}
+  main{max-width:1180px;margin:26px auto;padding:0 18px 35px}
+  .hero{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 24px;margin-bottom:20px;background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+  .hero:after{content:"🍜";font-size:90px;opacity:.18;position:absolute;right:24px;top:-8px;transform:rotate(-12deg);pointer-events:none}
+  .eyebrow{text-transform:uppercase;letter-spacing:.15em;font-weight:900;color:var(--red);font-size:.72rem;margin-bottom:7px}
+  .hero h2{font-size:clamp(1.2rem,2.6vw,1.75rem);margin-bottom:7px}
+  .hero p{margin:0;color:var(--muted);max-width:650px;line-height:1.5}
+  .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(320px,.9fr);gap:20px;align-items:start}
+  .panel{background:rgba(255,253,247,.95);border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);overflow:hidden}
+  .panel-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .panel-head h2{font-size:1.15rem;margin:0}
+  .panel-head small{color:var(--muted)}
+  .menu-grid{padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+  .item{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fffaf0;display:flex;flex-direction:column;min-height:205px;transition:transform .15s,border-color .15s,box-shadow .15s}
+  .item:hover{transform:translateY(-2px);border-color:#e8b46c;box-shadow:0 8px 18px rgba(70,32,20,.08)}
+  .food-icon{width:52px;height:52px;display:grid;place-items:center;font-size:30px;background:#ffe8c6;border-radius:15px;margin-bottom:10px}
+  .item h3{margin:0 0 4px;font-size:1.02rem}
+  .desc{font-size:.82rem;color:var(--muted);line-height:1.4;min-height:34px}
+  .item-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:auto;padding-top:12px}
+  .price{font-weight:900;color:var(--red-dark);white-space:nowrap}
+  button{font:inherit;cursor:pointer;border:0;transition:filter .15s,transform .1s}
+  button:hover{filter:brightness(.97)} button:active{transform:scale(.98)}
+  .add{background:var(--red);color:white;font-weight:800;border-radius:11px;padding:9px 12px}
+  .receipt-body{padding:18px 20px}
+  label{display:block;font-size:.82rem;font-weight:800;margin-bottom:7px}
+  input{width:100%;border:1px solid #dfc6a7;background:white;border-radius:11px;padding:11px 12px;font:inherit;color:var(--ink);outline:none}
+  input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(215,71,53,.12)}
+  .field{margin-bottom:17px}
+  .cart-list{display:flex;flex-direction:column;gap:10px;margin:14px 0 18px}
+  .empty{padding:22px 12px;text-align:center;background:#fff7e9;border:1px dashed #dfc6a7;border-radius:14px;color:var(--muted);line-height:1.55}
+  .empty span{display:block;font-size:35px;margin-bottom:5px}
+  .cart-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid #f0e2ce}
+  .cart-row:last-child{border-bottom:0}
+  .cart-name{font-weight:800;font-size:.92rem}
+  .cart-math{font-size:.8rem;color:var(--muted);margin-top:3px}
+  .cart-right{text-align:right}
+  .line-total{font-weight:900;color:var(--red-dark)}
+  .qty-controls{display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:6px}
+  .qty-btn{width:27px;height:27px;border-radius:8px;background:#ffe7c3;color:#713329;font-weight:900;font-size:1rem}
+  .qty{min-width:17px;text-align:center;font-weight:800}
+  .remove{background:transparent;color:#9d6d60;font-size:.76rem;text-decoration:underline;padding:3px 0 0 5px}
+  .totals{border-top:2px dashed #dfc6a7;padding-top:14px;margin-top:4px}
+  .total-line{display:flex;justify-content:space-between;align-items:center;gap:10px;color:var(--muted);font-weight:800}
+  .grand{font-size:1.2rem;color:var(--ink);margin-top:8px}
+  .grand strong{font-size:1.65rem;color:var(--red-dark);white-space:nowrap}
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:18px}
+  .primary,.secondary,.danger{border-radius:12px;padding:12px 10px;font-weight:900}
+  .primary{background:var(--red);color:white}
+  .secondary{background:#ffe8c6;color:#70352a}
+  .danger{background:#f4e3df;color:#913d32}
+  .note{font-size:.78rem;color:var(--muted);line-height:1.5;margin:13px 0 0}
+  .receipt-preview{margin-top:18px;padding:15px;border-radius:14px;background:#fff7e9;border:1px dashed #dfc6a7;display:none}
+  .receipt-preview h3{margin-bottom:8px}
+  .receipt-preview pre{white-space:pre-wrap;word-break:break-word;font: .84rem/1.55 ui-monospace,SFMono-Regular,Consolas,monospace;margin:0}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#2b1b1b;color:white;padding:11px 16px;border-radius:999px;box-shadow:var(--shadow);display:none;z-index:10}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:22px 10px 5px}
+  @media(max-width:800px){.layout{grid-template-columns:1fr}.hero:after{right:8px;font-size:68px}.menu-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:480px){.topinner{align-items:flex-start;flex-direction:column}.menu-grid{grid-template-columns:1fr}.item{min-height:0}.desc{min-height:0}.hero{padding:18px}.hero:after{opacity:.1}}
+  @media print{body{background:white}.topbar,.hero,.menu-panel,.field,.actions,.note,footer,.panel-head small{display:none!important}.layout{display:block}.panel{box-shadow:none;border:0}.receipt-panel{display:block}.receipt-body{padding:0}.receipt-preview{display:block!important;border:0;background:white}.receipt-preview pre{font-size:12pt}.cart-list{display:none}.totals{border-top:1px solid #aaa}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topinner">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">🍜</div>
+      <div><h1>Mingxin Ramen</h1></div>
+    </div>
+    <div class="currency-pill">🪙 Currency: Jenni</div>
+  </div>
+</header>
+<main>
+  <section class="hero">
+    <div>
+      <div class="eyebrow">Mingxin Ramen • Worker Order Tracker</div>
+      <h2>Track every item. Keep bulk orders accurate.</h2>
+    </div>
+  </section>
+  <div class="layout">
+    <section class="panel menu-panel">
+      <div class="panel-head"><h2>🍥 Ramen Shop Menu</h2><small>Tap Add to start an order</small></div>
+      <div class="menu-grid" id="menu"></div>
+    </section>
+    <section class="panel receipt-panel">
+      <div class="panel-head"><h2>🧾 Order Tracker</h2><small id="item-count">0 items</small></div>
+      <div class="receipt-body">
+        <div class="field">
+          <label for="customer">Order or customer reference (optional)</label>
+          <input id="customer" type="text" placeholder="e.g. Bulk order #1" maxlength="80">
+        </div>
+        <div id="cart" class="cart-list"></div>
+        <div class="totals">
+          <div class="total-line"><span>Items subtotal</span><span id="subtotal">0 Jenni</span></div>
+          <div class="total-line grand"><span>Total due</span><strong id="grand-total">0 Jenni</strong></div>
+        </div>
+        <div class="actions">
+          <button class="primary" id="make-receipt">Create receipt</button>
+          <button class="secondary" id="copy-receipt">Copy receipt</button>
+          <button class="secondary" id="print-receipt">Print receipt</button>
+          <button class="danger" id="clear-order">Clear order</button>
+        </div>
+        <div class="receipt-preview" id="receipt-preview">
+          <h3>🍜 Order Receipt</h3>
+          <pre id="receipt-text"></pre>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const products = [
+  {id:"pork", name:"Pork Ramen", price:200, icon:"🍜", desc:"Rich, savory broth with tender pork."},
+  {id:"chicken", name:"Chicken Ramen", price:150, icon:"🍥", desc:"A comforting bowl with a lighter broth."},
+  {id:"seafood", name:"Seafood Ramen", price:175, icon:"🦐", desc:"A sea-inspired bowl packed with flavor."},
+  {id:"onigiri", name:"Onigiri", price:60, icon:"🍙", desc:"A handy rice snack for the road."},
+  {id:"mochi", name:"Mochi", price:50, icon:"🍡", desc:"Soft, sweet rice cakes."},
+  {id:"tea", name:"Green Tea", price:45, icon:"🍵", desc:"A soothing cup to finish the meal."}
+];
+const cart = new Map();
+const menu = document.getElementById("menu");
+const cartEl = document.getElementById("cart");
+const money = n => `${n.toLocaleString("en-US")} Jenni`;
+const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function renderMenu(){
+  menu.innerHTML = products.map(p => `
+    <article class="item">
+      <div class="food-icon" aria-hidden="true">${p.icon}</div>
+      <h3>${p.name}</h3>
+      <div class="desc">${p.desc}</div>
+      <div class="item-bottom"><span class="price">${money(p.price)}</span><button class="add" data-add="${p.id}">+ Add</button></div>
+    </article>`).join("");
+}
+function add(id){cart.set(id,(cart.get(id)||0)+1);renderCart();hideReceipt();}
+function change(id,delta){const next=(cart.get(id)||0)+delta;if(next<=0)cart.delete(id);else cart.set(id,next);renderCart();hideReceipt();}
+function renderCart(){
+  const entries=products.filter(p=>cart.has(p.id));
+  if(!entries.length){
+    cartEl.innerHTML='<div class="empty"><span>🥢</span>Your order is empty.<br>Choose something delicious from the menu!</div>';
+  } else {
+    cartEl.innerHTML=entries.map(p=>{const qty=cart.get(p.id);return `
+      <div class="cart-row">
+        <div><div class="cart-name">${p.icon} ${p.name}</div><div class="cart-math">${money(p.price)} × ${qty}</div></div>
+        <div class="cart-right"><div class="line-total">${money(p.price*qty)}</div><div class="qty-controls">
+          <button class="qty-btn" data-change="${p.id}" data-delta="-1" aria-label="Decrease ${p.name}">−</button><span class="qty">${qty}</span>
+          <button class="qty-btn" data-change="${p.id}" data-delta="1" aria-label="Increase ${p.name}">+</button>
+          <button class="remove" data-remove="${p.id}">Remove</button>
+        </div></div>
+      </div>`}).join("");
+  }
+  const count=[...cart.values()].reduce((a,b)=>a+b,0);
+  const total=products.reduce((sum,p)=>sum+p.price*(cart.get(p.id)||0),0);
+  document.getElementById("item-count").textContent=`${count} ${count===1?"item":"items"}`;
+  document.getElementById("subtotal").textContent=money(total);
+  document.getElementById("grand-total").textContent=money(total);
+}
+function buildReceipt(){
+  const entries=products.filter(p=>cart.has(p.id));
+  if(!entries.length){toast("Add at least one item before creating a receipt.");return null;}
+  const customer=document.getElementById("customer").value.trim()||"Walk-in customer";
+  const now=new Date();
+  const lines=["MINXIN RAMEN","WORKER ORDER SUMMARY","--------------------------------",`Customer: ${customer}`,`Date: ${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`,"--------------------------------"];
+  entries.forEach(p=>{const qty=cart.get(p.id);lines.push(`${p.name}  x${qty}`,`  ${money(p.price)} each  =  ${money(p.price*qty)}`);});
+  const total=entries.reduce((sum,p)=>sum+p.price*cart.get(p.id),0);
+  lines.push("--------------------------------",`TOTAL DUE: ${money(total)}`,"Thank you for visiting!");
+  return lines.join("\n");
+}
+function hideReceipt(){document.getElementById("receipt-preview").style.display="none";}
+function showReceipt(){const receipt=buildReceipt();if(receipt){document.getElementById("receipt-text").textContent=receipt;document.getElementById("receipt-preview").style.display="block";}}
+let toastTimer;
+function toast(message){const el=document.getElementById("toast");el.textContent=message;el.style.display="block";clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.style.display="none",2300);}
+menu.addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(b)add(b.dataset.add);});
+cartEl.addEventListener("click",e=>{
+  const changeBtn=e.target.closest("[data-change]");const removeBtn=e.target.closest("[data-remove]");
+  if(changeBtn)change(changeBtn.dataset.change,Number(changeBtn.dataset.delta));
+  if(removeBtn){cart.delete(removeBtn.dataset.remove);renderCart();hideReceipt();}
+});
+document.getElementById("make-receipt").addEventListener("click",showReceipt);
+document.getElementById("copy-receipt").addEventListener("click",async()=>{
+  const receipt=buildReceipt();if(!receipt)return;
+  try{await navigator.clipboard.writeText(receipt);toast("Receipt copied to clipboard!");}
+  catch(e){showReceipt();const range=document.createRange();range.selectNodeContents(document.getElementById("receipt-text"));const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);toast("Receipt shown below. Select and copy the text.");}
+});
+document.getElementById("print-receipt").addEventListener("click",()=>{const receipt=buildReceipt();if(!receipt)return;document.getElementById("receipt-text").textContent=receipt;document.getElementById("receipt-preview").style.display="block";window.print();});
+document.getElementById("clear-order").addEventListener("click",()=>{cart.clear();document.getElementById("customer").value="";renderCart();hideReceipt();toast("Order cleared.");});
+document.getElementById("customer").addEventListener("input",hideReceipt);
+renderMenu();renderCart();
+</script>
+</body>
+</html>
