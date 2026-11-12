@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mingxin Ramen — Jenni Order Calculator</title>
+<title>MingXin Ramen — Jenni Order Calculator</title>
 <style>
   :root{
     --ink:#2b1b1b; --muted:#785f58; --paper:#fff8e9; --card:#fffdf7;
@@ -39,6 +39,7 @@
   .panel-head h2{font-size:1.15rem;margin:0}
   .panel-head small{color:var(--muted)}
   .menu-grid{padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+  .category-heading{grid-column:1/-1;margin:10px 0 0;padding:8px 2px 7px;border-bottom:2px solid #ecd8bd;color:var(--red-dark);font-weight:900;font-size:1.02rem}
   .item{border:1px solid var(--line);border-radius:16px;padding:14px;background:#fffaf0;display:flex;flex-direction:column;min-height:205px;transition:transform .15s,border-color .15s,box-shadow .15s}
   .item:hover{transform:translateY(-2px);border-color:#e8b46c;box-shadow:0 8px 18px rgba(70,32,20,.08)}
   .food-icon{width:52px;height:52px;display:grid;place-items:center;font-size:30px;background:#ffe8c6;border-radius:15px;margin-bottom:10px}
@@ -92,7 +93,7 @@
   <div class="topinner">
     <div class="brand">
       <div class="logo" aria-hidden="true">🍜</div>
-      <div><h1>Mingxin Ramen</h1></div>
+      <div><h1>MingXin Ramen</h1></div>
     </div>
     <div class="currency-pill">🪙 Currency: Jenni</div>
   </div>
@@ -100,13 +101,14 @@
 <main>
   <section class="hero">
     <div>
-      <div class="eyebrow">Mingxin Ramen • Worker Order Tracker</div>
+      <div class="eyebrow">MingXin Ramen • Worker Order Tracker</div>
       <h2>Track every item. Keep bulk orders accurate.</h2>
+      <p>Add the items in an order, enter bulk quantities, and see each line total and the full amount due in Jenni. This calculator is designed for workers to keep orders accurate while serving customers.</p>
     </div>
   </section>
   <div class="layout">
     <section class="panel menu-panel">
-      <div class="panel-head"><h2>🍥 Ramen Shop Menu</h2><small>Tap Add to start an order</small></div>
+      <div class="panel-head"><h2>🍥 Ramen Shop Menu</h2><small>Choose items or combo meals</small></div>
       <div class="menu-grid" id="menu"></div>
     </section>
     <section class="panel receipt-panel">
@@ -127,6 +129,7 @@
           <button class="secondary" id="print-receipt">Print receipt</button>
           <button class="danger" id="clear-order">Clear order</button>
         </div>
+        <p class="note">For worker use: enter each item and quantity, especially for bulk orders. This calculator totals the order in Jenni but does not process payments or connect to Roblox.</p>
         <div class="receipt-preview" id="receipt-preview">
           <h3>🍜 Order Receipt</h3>
           <pre id="receipt-text"></pre>
@@ -134,16 +137,23 @@
       </div>
     </section>
   </div>
+  
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
 const products = [
-  {id:"pork", name:"Pork Ramen", price:200, icon:"🍜", desc:"Rich, savory broth with tender pork."},
-  {id:"chicken", name:"Chicken Ramen", price:150, icon:"🍥", desc:"A comforting bowl with a lighter broth."},
-  {id:"seafood", name:"Seafood Ramen", price:175, icon:"🦐", desc:"A sea-inspired bowl packed with flavor."},
-  {id:"onigiri", name:"Onigiri", price:60, icon:"🍙", desc:"A handy rice snack for the road."},
-  {id:"mochi", name:"Mochi", price:50, icon:"🍡", desc:"Soft, sweet rice cakes."},
-  {id:"tea", name:"Green Tea", price:45, icon:"🍵", desc:"A soothing cup to finish the meal."}
+  {id:"seafood", category:"Main Dishes", name:"Seafood Ramen", price:250, icon:"🦐", desc:"Seafood ramen bowl."},
+  {id:"chicken", category:"Main Dishes", name:"Chicken Ramen", price:225, icon:"🍥", desc:"Chicken ramen bowl."},
+  {id:"pork", category:"Main Dishes", name:"Pork Ramen", price:275, icon:"🍜", desc:"Pork ramen bowl."},
+  {id:"onigiri", category:"Sides", name:"Onigiri (1 Piece)", price:100, icon:"🍙", desc:"One piece of onigiri."},
+  {id:"onigiri5", category:"Sides", name:"Onigiri Bulk Pack (5 Pieces)", price:450, icon:"🍙", desc:"Five pieces of onigiri."},
+  {id:"mochi", category:"Desserts", name:"Mochi", price:60, icon:"🍡", desc:"Sweet rice cake."},
+  {id:"tea", category:"Beverages", name:"Green Tea", price:50, icon:"🍵", desc:"A cup of green tea."},
+  {id:"classic", category:"Combo Meals", name:"Classic Chicken Set", price:270, icon:"🍜", desc:"Chicken Ramen + Green Tea"},
+  {id:"porkset", category:"Combo Meals", name:"Pork Lover's Set", price:365, icon:"🥢", desc:"Pork Ramen + 1 Onigiri"},
+  {id:"deluxe", category:"Combo Meals", name:"Seafood Deluxe", price:300, icon:"🦐", desc:"Seafood Ramen + Mochi"},
+  {id:"feast", category:"Combo Meals", name:"Onigiri Feast", price:710, icon:"🍙", desc:"Chicken Ramen + 5 Onigiri + Green Tea"},
+  {id:"signature", category:"Combo Meals", name:"MingXin Signature", price:375, icon:"🍱", desc:"Pork Ramen + Mochi + Green Tea"}
 ];
 const cart = new Map();
 const menu = document.getElementById("menu");
@@ -151,13 +161,18 @@ const cartEl = document.getElementById("cart");
 const money = n => `${n.toLocaleString("en-US")} Jenni`;
 const escapeHtml = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function renderMenu(){
-  menu.innerHTML = products.map(p => `
+  let currentCategory = "";
+  menu.innerHTML = products.map(p => {
+    const heading = p.category !== currentCategory ? `<h3 class="category-heading">${p.category}</h3>` : "";
+    currentCategory = p.category;
+    return heading + `
     <article class="item">
       <div class="food-icon" aria-hidden="true">${p.icon}</div>
       <h3>${p.name}</h3>
       <div class="desc">${p.desc}</div>
       <div class="item-bottom"><span class="price">${money(p.price)}</span><button class="add" data-add="${p.id}">+ Add</button></div>
-    </article>`).join("");
+    </article>`;
+  }).join("");
 }
 function add(id){cart.set(id,(cart.get(id)||0)+1);renderCart();hideReceipt();}
 function change(id,delta){const next=(cart.get(id)||0)+delta;if(next<=0)cart.delete(id);else cart.set(id,next);renderCart();hideReceipt();}
@@ -187,7 +202,7 @@ function buildReceipt(){
   if(!entries.length){toast("Add at least one item before creating a receipt.");return null;}
   const customer=document.getElementById("customer").value.trim()||"Walk-in customer";
   const now=new Date();
-  const lines=["MINXIN RAMEN","WORKER ORDER SUMMARY","--------------------------------",`Customer: ${customer}`,`Date: ${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`,"--------------------------------"];
+  const lines=["MINGXIN RAMEN","WORKER ORDER SUMMARY","--------------------------------",`Customer: ${customer}`,`Date: ${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"})}`,"--------------------------------"];
   entries.forEach(p=>{const qty=cart.get(p.id);lines.push(`${p.name}  x${qty}`,`  ${money(p.price)} each  =  ${money(p.price*qty)}`);});
   const total=entries.reduce((sum,p)=>sum+p.price*cart.get(p.id),0);
   lines.push("--------------------------------",`TOTAL DUE: ${money(total)}`,"Thank you for visiting!");
